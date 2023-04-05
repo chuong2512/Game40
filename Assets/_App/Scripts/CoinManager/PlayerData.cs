@@ -22,6 +22,7 @@ public class PlayerData : BaseData
 
     public Action<int> onChangeDiamond;
     public Action<int> onChangePoint;
+    public int level;
 
     public override void Init()
     {
@@ -37,6 +38,7 @@ public class PlayerData : BaseData
 
     public override void ResetData()
     {
+        level = 1;
         intDiamond = 0;
         currentSkin = 0;
         highPoint = 0;
@@ -52,6 +54,12 @@ public class PlayerData : BaseData
         Save();
     }
 
+    public void UpLevel()
+    {
+        level++;
+        Save();
+    }
+    
     public void CheckPoint(int point)
     {
         if (point > highPoint)
@@ -114,8 +122,13 @@ public class PlayerData : BaseData
         return intDiamond >= Constant.priceUnlockBG;
     }
 
-    public void SubDiamond(int a)
+    public bool SubDiamond(int a)
     {
+        if (intDiamond < a)
+        {
+            return false;
+        }
+        
         intDiamond -= a;
 
         if (intDiamond < 0)
@@ -126,6 +139,8 @@ public class PlayerData : BaseData
         onChangeDiamond?.Invoke(intDiamond);
 
         Save();
+
+        return true;
     }
 
     public void ChooseBG(int i)

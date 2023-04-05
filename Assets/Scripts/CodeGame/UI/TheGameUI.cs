@@ -3,79 +3,50 @@ using System.Collections.Generic;
 using DG.Tweening;
 using RObo;
 using Sirenix.OdinInspector;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public enum State
 {
-    Runing,
-    Stop
+    Drawing,
+    Stop,
+    Pause
 }
 
 public class TheGameUI : Singleton<TheGameUI>
 {
-    public Button back;
-    public Button back1;
-    public Button menu;
+    public GameObject lose, win;
 
-    public GameObject lose;
+    public State currentState = State.Drawing;
 
-    public State currentState = State.Stop;
 
+    public TextMeshProUGUI levelTMP;
 
     // Start is called before the first frame update
     void Start()
     {
-        back?.onClick.AddListener(ExitGame);
-        menu?.onClick.AddListener(RestartGame);
-        back1?.onClick.AddListener(ExitGame);
+        SetState(State.Drawing);
         
-        SetState(State.Stop);
-    }
-
-    public float holdDuration = 1f;
-
-    public float max = 3;
-    public float rangeMove = 0;
-    public int direction = 1;
-
-    void Update()
-    {
-        if (currentState == State.Stop)
-        {
-            if (Input.GetMouseButton(0))
-            {
-                rangeMove += Time.deltaTime * direction;
-
-                if (rangeMove >= max)
-                {
-                    direction = -1;
-                }
-
-                if (rangeMove < 0)
-                {
-                    direction = 1;
-                }
-
-                Bridge.Instance.SetLine(rangeMove);
-            }
-
-            if (Input.GetMouseButtonUp(0))
-            {
-                Bridge.Instance.SetLine(rangeMove, true);
-                rangeMove = 0;
-                SetState(State.Runing);
-            }
-        }
+        levelTMP.SetText($"LEVEL {GameDataManager.Instance.playerData.level}");
     }
 
     public void ShowLose()
     {
+        StopAllCoroutines();
+        SetState(State.Pause);
         lose.SetActive(true);
     }
 
-    private void ExitGame()
+    public void ShowWin()
+    {
+        StopAllCoroutines();
+        SetState(State.Pause);
+        win.SetActive(true);
+    }
+
+    public void ExitGame()
     {
         SceneManager.LoadScene("Menu");
     }
@@ -85,10 +56,29 @@ public class TheGameUI : Singleton<TheGameUI>
         SceneManager.LoadScene("Game");
     }
 
+    public void NextGame()
+    {
+        if (GameDataManager.Instance.playerData.SubDiamond(1))
+        {
+            
+           NextGameWin();
+        }
+        
+    }
+        
+        public void NextGameWin()
+    {
+
+            GameDataManager.Instance.playerData.UpLevel();
+            SceneManager.LoadScene("Game");
+        
+        
+    }
+
     [Button]
     public void Jump()
     {
-        SetState(State.Runing);
+        SetState(State.Drawing);
     }
 
     private float duration = 1f;
@@ -96,5 +86,16 @@ public class TheGameUI : Singleton<TheGameUI>
     public void SetState(State state)
     {
         currentState = state;
+    }
+
+    public void Check()
+    {
+        IEnumerator CheckIE()
+        {
+            yield return new WaitForSeconds(5);
+            Level.Instance.Check();
+        }
+
+        StartCoroutine(CheckIE());
     }
 }

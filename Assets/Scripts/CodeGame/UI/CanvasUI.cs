@@ -16,8 +16,6 @@ public class CanvasUI : Singleton<CanvasUI>
     {
         start?.onClick.AddListener(OpenGame);
         exit?.onClick.AddListener(ExitGame);
-        
-        SetBG(GameDataManager.Instance.bg[GameDataManager.Instance.playerData.currentBG]);
     }
 
     private void ExitGame()
